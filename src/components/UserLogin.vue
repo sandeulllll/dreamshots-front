@@ -2,7 +2,7 @@
   <div class="user-login-form-container">
     <div class="user-login-form">
       <div class="user-login-form-title">
-        密码登录-MainPage
+        密码登录-UserLogin
       </div>
       <div class="user-login-form-item">
         <div class="user-login-form-item-title">
@@ -20,12 +20,14 @@
         </div>
       </div>
       <div class="user-login-form-footer">
-        <button v-on:click="register(account,password)" class="user-login-form-footer-btn">
+<!--        <button v-on:click="register(account,password)" class="user-login-form-footer-btn">
           注册
         </button>
         <button @click="login" class="user-login-form-footer-btn">
           登录
-        </button>
+        </button>-->
+        <el-button type="primary" class="user-login-form-footer-btn">注册</el-button>
+        <el-button type="primary" class="user-login-form-footer-btn">登录</el-button>
       </div>
     </div>
   </div>
@@ -33,7 +35,7 @@
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'UserLogin',
   props: {
     msg: String
   },
@@ -151,6 +153,10 @@ export default {
     .user-login-form-footer{
       display: flex;
       justify-content: space-between;
+
+      .user-login-form-footer-btn{
+        width: 100%;
+      }
     }
   }
 }
