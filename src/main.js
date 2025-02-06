@@ -6,6 +6,11 @@ import router from "@/router";
 //引入ElementUI
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
+import Element from 'element-ui';
+Element.Dialog.props.lockScroll.default=false;
+
+import store from '@/vuex/index'
+
 //引入瀑布流加载
 import InfiniteLoading from "vue-infinite-loading";
 Vue.use(InfiniteLoading);
@@ -42,5 +47,6 @@ new Vue({
   */
   //初始化Vue实例时使用render函数
   router, //引入router
+  store,
   render: h => h(App),
 }).$mount('#app') //实现挂载功能

@@ -4,6 +4,8 @@ import UserLogin from "@/components/UserLogin.vue";
 import MainPage from "@/components/MainPage.vue";
 import MySpaceHome from "@/components/MySpaceHome.vue";
 import MySpacePost from "@/components/MySpacePost.vue";
+import PostContent from "@/components/PostContent.vue";
+import VideoDetail from "@/components/VideoDetail.vue";
 
 Vue.use(VueRouter)
 
@@ -20,9 +22,9 @@ const routes = [
     },
     {
         // 个人中心
-        path:'/myspace',
+        path:'/mySpace',
         component:MainPage,
-        redirect:'/myspace/home',
+        redirect:'/mySpace/home',
         children:[
             {
                 // 主页
@@ -36,6 +38,16 @@ const routes = [
             }
         ]
     },
+    {
+        //视频投稿
+        path:'/postContent',
+        component:PostContent,
+    },
+    {
+        //视频详情
+        path:'/videoDetail',
+        component:VideoDetail
+    }
 ]
 
 const router = new VueRouter({

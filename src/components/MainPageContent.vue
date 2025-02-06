@@ -1,11 +1,17 @@
 <script>
+
+// 导入videoApi
 import videoApi from "@/api/videoApi";
 
 export default {
+  // 组件名称
   name: "MainPageContent",
 
+  // 数据定义
   data(){
     return{
+
+      // 轮播图数据
       items:[
         {
           imgUrl:require('@/assets/header/header-banner.png'),
@@ -20,6 +26,8 @@ export default {
           id:3,
         }
       ],
+
+      // 菜单数据
       menus:[
         {
           name:'主页',
@@ -32,7 +40,11 @@ export default {
           index:'2'
         }
       ],
+
+      // 推荐
       recommendThumbnail:require('@/assets/bilibiliavatar.png'),
+
+      // 左侧频道列表
       leftChannels: [
         {
           name: '番剧',
@@ -123,6 +135,8 @@ export default {
           href: 'https://www.bilibili.com/anime/'
         }
       ],
+
+      // 右侧频道列表
       rightChannels: [
         {
           name: '专栏',
@@ -149,6 +163,8 @@ export default {
           href: 'https://www.bilibili.com/anime/'
         }
       ],
+
+      // 推荐视频列表
       recommendedVideos:[
         {
           id:1,
@@ -163,6 +179,8 @@ export default {
           thumbnail:require('@/assets/banner/3.jpg')
         }
       ],
+
+      // 视频列表
       videos:[
         {
           id:1,
@@ -172,48 +190,57 @@ export default {
           danmuCount:20,
           viewCount:10
         },
-        {
-          id:2,
-          title:'title2',
-          thumbnail:require('@/assets/banner/2.jpg'),
-          createTime: '2023-12-17 10:30:42',
-          danmuCount:30,
-          viewCount:20
-        },
-        {
-          id:3,
-          title:'title3',
-          thumbnail:require('@/assets/banner/3.jpg'),
-          createTime: '2023-12-18 10:30:42',
-          danmuCount:10,
-          viewCount:40
-        }
       ],
+
+      // 无限加载的唯一标识
       infiniteId:1,
+
+      // 当前页码
       currentPage:1
     }
   },
 
   methods:{
+
+    // 跳转到视频详情页
     jumpToVideoDetail(video){
-      console.log(video);
+      // 暂未实现跳转逻辑
+      if(video){
+        this.$router.push({
+          path:'videoDetail',
+          query:{
+            videoId:video.id
+          }
+        });
+      }else {
+        this.$router.push('/videoDetail');
+      }
     },
+
+    // 分页加载视频列表
     pageListVideos($state){
       let params = {
+        // 每页加载的视频数量
         size:10,
+        // 当前页码
         no:this.currentPage
       }
+      // 调用API分页获取视频列表
       videoApi.pageListVideos({params}).then(response => {
         const {list:videos, total:total} = response.data;
+        // 如果没有更多数据
         if(videos.length === 0){
-          // 已加载所有数据，不再触发加载
+          // 已加载所有数据，标记加载完成，不再触发加载
           $state.complete();
           return;
         }
+        // 将新加载的视频追加到现有视频列表中
         this.videos = this.videos.concat(videos);
         this.total = total;
-        this.currentPage++; // 递增当前页码
-        $state.loaded(); // 标记加载完成
+        // 递增当前页码
+        this.currentPage++;
+        // 标记加载完成
+        $state.loaded();
       }).catch(error => {
         // 捕获异常
         console.error('请求出错:', error);
@@ -230,6 +257,7 @@ export default {
 <!--    分区导航-->
     <div class="main-page-channel-container">
 
+<!--      左侧频道-->
       <div class="left-channel">
         <div class="left-channel-recommend">
           <img :src="recommendThumbnail" alt="">
@@ -241,6 +269,7 @@ export default {
         </div>
       </div>
 
+<!--      右侧频道-->
       <div class="right-channel">
         <div class="right-channel-left">
           <a class="right-channel-left-link"
@@ -260,9 +289,12 @@ export default {
 
     </div>
 
+<!--    轮播图-->
     <div class="main-page-video-container">
 
       <div class="carousel-container">
+
+<!--        轮播图组件-->
         <el-carousel :interval="5000" arrow="always" class="carousel">
           <el-carousel-item v-for="(video,index) in recommendedVideos" :key="index">
             <img :src="video.thumbnail"
@@ -272,9 +304,10 @@ export default {
         </el-carousel>
       </div>
 
+<!--      视频列表-->
       <div class="video-container" v-for="video in videos" :key="video.id"
                   @click="jumpToVideoDetail(video)">
-        <img :src="video.thumbnail" class="thumbnail">
+        <img :src="'http://106.54.188.180:8888/group1/' + video.thumbnail" class="thumbnail">
         <span>{{video.title}}</span>
 
         <div class="videos-details">
@@ -294,6 +327,7 @@ export default {
 
       </div>
 
+<!--      无限加载-->
       <infinite-loading :infinite-id="infiniteId"
                         @infinite="pageListVideos">
 
