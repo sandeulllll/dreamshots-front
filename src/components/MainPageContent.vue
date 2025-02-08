@@ -181,16 +181,7 @@ export default {
       ],
 
       // 视频列表
-      videos:[
-        {
-          id:1,
-          title:'title1',
-          thumbnail:require('@/assets/banner/1.jpg'),
-          createTime: '2023-12-16 10:30:42',
-          danmuCount:20,
-          viewCount:10
-        },
-      ],
+      videos:[],
 
       // 无限加载的唯一标识
       infiniteId:1,

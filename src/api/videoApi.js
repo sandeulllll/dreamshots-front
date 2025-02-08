@@ -16,10 +16,11 @@ export default {
         });
     },
 
-    //添加视频播放记录
+    //添加tag
     async addTag(params){
         return await httpRequest.post('tags', params);
     },
+
 
     //视频投稿
     async postVideo(params){
@@ -47,6 +48,14 @@ export default {
             params:{videoId:videoId}
         }
         return await httpRequest.get('/video-likes', params);
+    },
+
+    //查询视频tags
+    async getVideoTags(videoId){
+        let params = {
+            params:{videoId:videoId}
+        };
+        return await httpRequest.get('/video-tags',params);
     },
 
     //查询视频投币数量
