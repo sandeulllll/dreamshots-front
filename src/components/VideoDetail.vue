@@ -8,10 +8,11 @@ import 'xgplayer/dist/xgplayer.css';
 import Danmu from 'xgplayer/es/plugins/danmu'
 import 'xgplayer/es/plugins/danmu/index.css'
 import {Events} from "xgplayer";
+import VideoComment from "@/components/VideoComment.vue";
 
 export default {
   name: "VideoDetail",
-  components: {CommonHeader},
+  components: {VideoComment, CommonHeader},
   data(){
     return{
       videoDetail:{
@@ -232,6 +233,8 @@ export default {
           </el-tag>
         </div>
       </div>
+
+      <VideoComment/>
     </div>
     <div class="right-container">
       
