@@ -9,10 +9,14 @@ import Danmu from 'xgplayer/es/plugins/danmu'
 import 'xgplayer/es/plugins/danmu/index.css'
 import {Events} from "xgplayer";
 import VideoComment from "@/components/VideoComment.vue";
+import UserUtils from "@/utils/userUtils";
+import userApi from "@/api/userApi";
+import LoginDialog from "@/components/LoginDialog.vue";
 
 export default {
   name: "VideoDetail",
-  components: {VideoComment, CommonHeader},
+  mixins:[UserUtils],
+  components: {LoginDialog, VideoComment, CommonHeader},
   data(){
     return{
       videoDetail:{
@@ -30,7 +34,9 @@ export default {
       hasCoin:false,
       coinCount:0,
       collected:false,
-      collectCount:0
+      collectCount:0,
+      followed:false,
+      showLoginDialog:false
     }
   },
   methods:{
@@ -50,6 +56,9 @@ export default {
         await this.getVideoCollections();
         //获取视频的播放量
         await this.getVideoViewCounts();
+      }
+      if(this.isUserLoggedIn){
+        await this.getUserFollowings();
       }
     },
     async initPlayer() {
@@ -128,7 +137,28 @@ export default {
     async getVideoViewCounts(){
       let response = await videoApi.getVideoViewCounts(this.$route.query.videoId);
       this.viewCount = response.data !== null ? response.data : this.viewCount;
-    }
+    },
+    async addUserFollowings(followingId){
+      if(!this.isUserLoggedIn){
+        this.showLoginDialog = true;
+        return;
+      }
+      let params = {
+        followingId:followingId
+      }
+      await userApi.addUserFollowings(params);
+      this.followed = true;
+    },
+
+    async getUserFollowings(){
+      let response = await userApi.getUserFollowings();
+      let followingGroupList = Array.isArray(response?.data) ? response.data : [];
+      // let followingGroupList = response.data;
+      let followingUserList = [];
+      followingGroupList.forEach(
+          group => followingUserList.push(...(group.followingUserInfoList)));
+      this.followed = followingUserList.some(item => item.userId === this.videoUpInfo.userId);
+    },
   },
   computed:{
     likeIcon(){
@@ -237,7 +267,31 @@ export default {
       <VideoComment v-if="this.$store.state.showVideoCommentComponent"/>
     </div>
     <div class="right-container">
-      
+
+      <div class="up-info-container">
+        <div class="up-avatar">
+          <img :src="videoUpInfo.avatar" alt="">
+        </div>
+        <div class="up-info-right">
+          <div class="up-info-detail">
+            {{videoUpInfo.nick}}
+          </div>
+        </div>
+        <div class="up-operation">
+          <el-button type="primary" v-if="!followed"
+                     @click="addUserFollowings(videoUpInfo.userId)">
+            关注
+          </el-button>
+          <el-button type="primary" v-else disabled>
+            已关注
+          </el-button>
+          <el-dialog title="密码登录"
+                     :visible.sync="showLoginDialog" width="30%">
+            <LoginDialog/>
+          </el-dialog>
+        </div>
+      </div>
+
     </div>
   </div>
   
