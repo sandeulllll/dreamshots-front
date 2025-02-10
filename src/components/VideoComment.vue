@@ -18,7 +18,8 @@ export default {
       replyUserId:'',
       infiniteId:1,
       currentCommentPage:1,
-      totalComments:0
+      totalComments:0,
+      replyTxt:''
     }
   },
   methods:{
@@ -64,6 +65,17 @@ export default {
         console.log('请求出错',error);
         $state.complete();
       })
+    },
+    async addReplyComment(replyCommentId){
+      let params = {
+        videoId:this.$route.query.videoId,
+        comment:this.replyTxt,
+        rootId:replyCommentId,
+        replyUserId:this.replyUserId
+      };
+      await videoApi.addVideoComment(params);
+      this.replyTxt = '';
+      this.refreshVideoCommentComponent();
     }
   },
   computed:{
@@ -138,7 +150,7 @@ export default {
           </textarea>
         </div>
         <div class="comment-button">
-          <el-button type="primary" @click="addVideoComment">
+          <el-button type="primary" @click="addVideoComment()">
             发布
           </el-button>
         </div>
@@ -151,6 +163,7 @@ export default {
             <img :src="rootComment.userInfo.avatar" alt="">
           </div>
           <div class="total-reply-content-container">
+<!--            一级评论-->
             <div class="root-reply-content-container">
               <div class="root-reply-username">
                 {{rootComment.userInfo.nick}}
@@ -159,20 +172,72 @@ export default {
                 <div class="root-reply-content-txt">
                   {{rootComment.comment}}
                 </div>
-              </div>
-              <div class="root-reply-content-operation">
-                <div class="reply-time">
-                  {{rootComment.createTime}}
-                </div>
-                <div class="reply-btn"
-                     @click="recordCurrentClickedComment(
+                <div class="root-reply-content-operation">
+                  <div class="reply-time">
+                    {{rootComment.createTime}}
+                  </div>
+                  <div class="reply-btn"
+                       @click="recordCurrentClickedComment(
                          rootComment.id,
                          rootComment.userInfo.nick,
                          rootComment.userId)">
-                  回复
+                    回复
+                  </div>
                 </div>
               </div>
             </div>
+            <!--              二级结构-->
+            <div class="sub-reply-content-container"
+                 v-for="childComment in rootComment.childList" :key="childComment.id">
+              <div class="sub-reply-userInfo">
+                <div class="sub-reply-avatar">
+                  <img :src="childComment.userInfo.avatar" alt="">
+                </div>
+              </div>
+              <div class="sub-reply-content">
+                <div class="sub-reply-userName">
+                  {{childComment.userInfo.nick}}
+                </div>
+                <div class="sub-reply-wrap">
+                  <div>
+                    回复{{childComment.replyUserInfo.nick}}：
+                  </div>
+                  <div class="sub-reply-content-txt">
+                    {{childComment.comment}}
+                  </div>
+                </div>
+
+                <div class="sub-reply-content-operation">
+                  <div class="reply-time">
+                    {{childComment.createTime}}
+                  </div>
+                  <div class="reply-btn"
+                       @click="recordCurrentClickedComment(childComment.id,
+                       childComment.userInfo.nick,childComment.userId)">
+                    回复
+                  </div>
+                </div>
+              </div>
+            </div>
+<!--            回复某一个用户评论的区域-->
+            <div class="reply-comment-area"
+                 v-if="currentCommentId === rootComment.id
+                 || rootComment.childList.some(item => item.id === currentCommentId)">
+              <div class="reply-user-avatar">
+                <img :src="avatar" alt="">
+              </div>
+              <div class="reply-comment-input">
+                <textarea class="comment-input-textarea" :placeholder="'回复' + commentUserName"
+                          v-model="replyTxt">
+                </textarea>
+              </div>
+              <div class="reply-comment-button">
+                <el-button type="primary" @click="addReplyComment(rootComment.id)">
+                  回复
+                </el-button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
