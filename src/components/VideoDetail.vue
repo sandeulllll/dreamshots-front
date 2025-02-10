@@ -234,7 +234,7 @@ export default {
         </div>
       </div>
 
-      <VideoComment/>
+      <VideoComment v-if="this.$store.state.showVideoCommentComponent"/>
     </div>
     <div class="right-container">
       
