@@ -2,12 +2,14 @@
 import CommonHeader from "@/components/CommonHeader.vue";
 import videoApi from "@/api/videoApi";
 
-// import Player from "xgplayer/es/player";
-import Player from 'xgplayer';
-import 'xgplayer/dist/xgplayer.css';
+import Player from 'xgplayer'
 import Danmu from 'xgplayer/es/plugins/danmu'
 import 'xgplayer/es/plugins/danmu/index.css'
+import 'xgplayer/dist/xgplayer.css';
 import {Events} from "xgplayer";
+// import {Danmu} from 'xgplayer';
+// import 'xgplayer/dist/index.min.css';
+
 import VideoComment from "@/components/VideoComment.vue";
 import UserUtils from "@/utils/userUtils";
 import userApi from "@/api/userApi";
@@ -36,7 +38,14 @@ export default {
       collected:false,
       collectCount:0,
       followed:false,
-      showLoginDialog:false
+      showLoginDialog:false,
+      defaultDanmuConfig:{
+        duration: 5000, //单位为毫秒,最低为5000毫秒
+        style:{
+          color:"#ffffff",
+          padding:'5px 11px'
+        }
+      }
     }
   },
   methods:{
@@ -82,7 +91,26 @@ export default {
       })
     },
     sendDanmu(){
+      if (!this.isUserLoggedIn){
+        this.showLoginDialog = true;
+        return;
+      }
+      if (this.danmuText){
+        const danmuText = this.danmuText;
+        const danmuTime = Math.floor(this.player.currentTime * 1000); //乘以1000是转换成毫秒
+        let danmuMessage = {
+          start:danmuTime,
+          txt:danmuText,
+          duration:this.defaultDanmuConfig.duration,
+          style:this.defaultDanmuConfig.style,
+        }
+        //把弹幕推到后端进行保存
 
+        //在前端播放器发送弹幕
+        this.danmuText = '';
+        danmuMessage.id = 1;
+        this.player.danmu.sendComment(danmuMessage);
+      }
     },
     async addOrDeleteVideoLike(){
       if (this.liked){
