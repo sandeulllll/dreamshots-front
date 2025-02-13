@@ -45,7 +45,9 @@ export default {
           color:"#ffffff",
           padding:'5px 11px'
         }
-      }
+      },
+      //用来存储新建的WebSocket实例
+      ws:null
     }
   },
   methods:{
@@ -105,12 +107,35 @@ export default {
           style:this.defaultDanmuConfig.style,
         }
         //把弹幕推到后端进行保存
-
+        let params = {};
+        params.content = danmuMessage;
+        params.videoId = this.$route.query.videoId;
+        params.danmuTime = danmuTime;
+        this.ws.send(JSON.stringify(params));
         //在前端播放器发送弹幕
         this.danmuText = '';
         danmuMessage.id = 1;
         this.player.danmu.sendComment(danmuMessage);
       }
+    },
+    initWebsocket(){
+      const url = 'ws://localhost:15005//imserver/' + localStorage.getItem('token');
+      console.log(url);
+      this.ws = new WebSocket(url);
+      this.ws.onmessage = (event) =>{
+        const msgObj = JSON.parse(event.data);
+        console.log('接收到的后端消息：',msgObj);
+        //如果消息类型是弹幕则调用播放器发送弹幕
+        if (msgObj.txt){
+          console.log('接收到弹幕',msgObj);
+          //后端推送给我们的话肯定是其他用户推送过来的
+          this.player.danmu.sendComment(msgObj);
+        }
+        //在线人数通知消息处理
+        if (msgObj.onlineCount){
+          this.onWatching = msgObj.onlineCount;
+        }
+      };
     },
     async addOrDeleteVideoLike(){
       if (this.liked){
@@ -204,6 +229,7 @@ export default {
   },
   mounted() {
     this.getVideoDetail();
+    this.initWebsocket();
   }
 }
 </script>
