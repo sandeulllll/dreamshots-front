@@ -14,6 +14,7 @@ import VideoComment from "@/components/VideoComment.vue";
 import UserUtils from "@/utils/userUtils";
 import userApi from "@/api/userApi";
 import LoginDialog from "@/components/LoginDialog.vue";
+import danmuApi from "@/api/danmuApi";
 
 export default {
   name: "VideoDetail",
@@ -47,10 +48,34 @@ export default {
         }
       },
       //用来存储新建的WebSocket实例
-      ws:null
+      ws:null,
+      activeNames:['1'],
+      tableData:[],
+      danmus:[]
     }
   },
   methods:{
+
+    async getDanmus(){
+      const videoId = this.$route.query.videoId;
+      const response = await danmuApi.getDanmus(videoId,null,null);
+      const {data:danmuList} = response;
+      this.danmuCount = danmuList.length === 0 ? 0 : danmuList.length;
+      danmuList.forEach(danmu => {
+        let data = {
+          danmuTime:'',
+          txt:'',
+          createTime:''
+        };
+        data.createTime = danmu.createTime;
+        const {content:content} = danmu;
+        data.txt = JSON.parse(content).txt;
+        data.danmuTime = this.millisecondsToMinutesAndSeconds(danmu.danmuTime);
+        this.tableData.push(data);
+      });
+      return danmuList;
+    },
+
     async getVideoDetail(){
       const videoId = this.$route.query.videoId;
       if(videoId){
@@ -74,6 +99,14 @@ export default {
     },
     async initPlayer() {
       const videoUrl = 'http://localhost:15005/video-slices?url=' + this.videoDetail.url;
+      const danmuList = await this.getDanmus();
+      if (danmuList && danmuList.length > 0){
+        danmuList.forEach(item => {
+          const content = JSON.parse(item.content);
+          content.id = item.id;
+          this.danmus.push(content);
+        });
+      }
       this.player = new Player({
         id:'bili-player',
         url:videoUrl,
@@ -81,9 +114,10 @@ export default {
         height:'450px',
         plugins:[Danmu],
         danmu:{
-          comments:[]
+          comments:this.danmus
         }
       });
+      this.player.danmu.setFontSize('20','24');
       this.player.on(Events.ENDED,async ()=>{
         let params = {
           videoId:this.$route.query.videoId
@@ -212,6 +246,15 @@ export default {
           group => followingUserList.push(...(group.followingUserInfoList)));
       this.followed = followingUserList.some(item => item.userId === this.videoUpInfo.userId);
     },
+
+    millisecondsToMinutesAndSeconds(milliseconds) {
+      const totalSeconds = Math.floor(milliseconds / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const formattedMinutes = String(minutes).padStart(2, '0');
+      const formattedSeconds = String(seconds).padStart(2, '0');
+      return `${formattedMinutes}:${formattedSeconds}`;
+    },
   },
   computed:{
     likeIcon(){
@@ -321,7 +364,7 @@ export default {
       <VideoComment v-if="this.$store.state.showVideoCommentComponent"/>
     </div>
     <div class="right-container">
-
+<!--      视频投稿的up主信息-->
       <div class="up-info-container">
         <div class="up-avatar">
           <img :src="videoUpInfo.avatar" alt="">
@@ -344,6 +387,31 @@ export default {
             <LoginDialog/>
           </el-dialog>
         </div>
+      </div>
+
+      <div class="danmu-box">
+        <el-collapse v-model="activeNames">
+          <el-collapse-item title="弹幕列表" name="1">
+            <el-table
+                :data="tableData" style="width: 100%" height="500px">
+              <el-table-column
+                  label="时间"
+                  prop="danmuTime"
+                  width="60">
+              </el-table-column>
+              <el-table-column
+                  label="弹幕内容"
+                  prop="txt"
+                  width="180">
+              </el-table-column>
+              <el-table-column
+                  label="发送时间"
+                  prop="createTime"
+                  width="260">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
       </div>
 
     </div>
