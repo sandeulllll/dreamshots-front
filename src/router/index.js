@@ -2,10 +2,12 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import UserLogin from "@/components/UserLogin.vue";
 import MainPage from "@/components/MainPage.vue";
-import MySpaceHome from "@/components/MySpaceHome.vue";
-import MySpacePost from "@/components/MySpacePost.vue";
+import MySpaceHome from "@/components/mySpace/MySpaceHome.vue";
+import MySpacePost from "@/components/mySpace/MySpacePost.vue";
 import PostContent from "@/components/PostContent.vue";
 import VideoDetail from "@/components/VideoDetail.vue";
+import MySpaceContent from "@/components/mySpace/MySpaceContent.vue";
+import MySpaceInfo from "@/components/mySpace/MySpaceInfo.vue";
 
 Vue.use(VueRouter)
 
@@ -23,19 +25,34 @@ const routes = [
     {
         // 个人中心
         path:'/mySpace',
-        component:MainPage,
         redirect:'/mySpace/home',
+        component:MySpaceContent,
         children:[
             {
-                // 主页
-                path:'/home',
-                component:MySpaceHome
+                // 个人中心-首页
+                path: 'home',
+                component: MySpaceHome
             },
             {
-                //投稿
-                path:'/post',
-                component:MySpacePost
-            }
+                // 个人中心-我的投稿
+                path: 'post',
+                component: MySpacePost
+            },
+            {
+                // 个人中心-个人信息
+                path: 'info',
+                component: MySpaceInfo
+            },
+            // {
+            //     // 个人中心-我的收藏
+            //     path: 'collection',
+            //     component: MySpaceCollection
+            // },
+            // {
+            //     // 个人中心-我的关注
+            //     path: 'following',
+            //     component: MySpaceFollowing
+            // },
         ]
     },
     {
