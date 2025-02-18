@@ -64,7 +64,6 @@ export default {
         const values = Object.values(areasCountMap);
         this.areaList[0].count = values.reduce((x,y)=> x+y);
       }
-
     },
 
     async pageListUserVideos(){
