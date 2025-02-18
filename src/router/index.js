@@ -9,6 +9,7 @@ import VideoDetail from "@/components/VideoDetail.vue";
 import MySpaceContent from "@/components/mySpace/MySpaceContent.vue";
 import MySpaceInfo from "@/components/mySpace/MySpaceInfo.vue";
 import MySpaceCollection from "@/components/mySpace/MySpaceCollection.vue";
+import MySpaceFollowing from "@/components/mySpace/MySpaceFollowing.vue";
 
 Vue.use(VueRouter)
 
@@ -49,11 +50,11 @@ const routes = [
                 path: 'collection',
                 component: MySpaceCollection
             },
-            // {
-            //     // 个人中心-我的关注
-            //     path: 'following',
-            //     component: MySpaceFollowing
-            // },
+            {
+                // 个人中心-我的关注
+                path: 'following',
+                component: MySpaceFollowing
+            },
         ]
     },
     {
