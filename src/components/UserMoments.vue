@@ -85,7 +85,7 @@ export default {
             type:'1'
           }
           await userMomentApi.addUserMoments(params2);
-          // location.reload();
+          location.reload();
         }
       }
     },
@@ -116,7 +116,7 @@ export default {
       userMomentApi.pageListMoments(params).then(response =>{
         if(response.data){
           const {list:moments} = response.data;
-          if(moments.length === 0){
+          if(moments.length === 0) {
             // 已加载所有数据，不再触发加载
             $state.complete();
             return;
@@ -135,7 +135,7 @@ export default {
   },
 
   mounted() {
-    if(!this.isUserLoggedIn){
+    if (!this.isUserLoggedIn) {
       window.alert('请先登录')
       this.jumpToPath('/')
     }
@@ -177,7 +177,7 @@ export default {
                         :key="menu.index" :index="menu.index"
                         class="user-moments-nav-menu-item"
                         @click="handleSelect(menu.index, menu.type)">
-            {{menu.name}}
+            {{ menu.name }}
           </el-menu-item>
         </el-menu>
       </div>
@@ -189,16 +189,16 @@ export default {
             <img :src="moment.userInfo.avatar" alt="">
             <div class="user-moments-list-item-userInfo-detail">
               <div style="color: #f69; font-weight: bold; margin-bottom: 10px">
-                {{moment.userInfo.nick}}
+                {{ moment.userInfo.nick }}
               </div>
               <div style="color: darkgray; ">
-                发布于：{{moment.createTime}}
+                发布于：{{ moment.createTime }}
               </div>
             </div>
           </div>
           <div class="user-moments-list-item-moment">
             <div class="user-moments-list-item-moment-txt">
-              {{moment.content.contentDetail.txt}}
+              {{ moment.content.contentDetail.txt }}
             </div>
             <div class="user-moments-list-item-moment-img" v-if="moment.type==='1' ">
               <img :src="moment.content.contentDetail.img" alt="">
@@ -209,22 +209,26 @@ export default {
                 <div class="user-moments-list-item-moment-video-detail-title"
                      @click="jumpToVideoDetail(moment.content.contentDetail.id)"
                      style="cursor: pointer">
-                  {{moment.content.contentDetail.title}}
+                  {{ moment.content.contentDetail.title }}
                 </div>
                 <div class="user-moments-list-item-moment-video-detail-description">
-                  {{moment.content.contentDetail.description}}
+                  {{ moment.content.contentDetail.description }}
                 </div>
                 <div class="user-moments-list-item-moment-video-detail-count">
                   <div class="user-moments-list-item-moment-video-detail-viewCount">
                     <img :src="require('@/assets/icon/viewCount.png')"
                          alt="">
-                    {{moment.content.contentDetail.viewCount
-                      ? moment.content.contentDetail.viewCount : 0}}
+                    {{
+                      moment.content.contentDetail.viewCount
+                          ? moment.content.contentDetail.viewCount : 0
+                    }}
                   </div>
                   <div class="user-moments-list-item-moment-video-detail-danmuCount">
                     <img :src="require('@/assets/icon/danmuCount.png')" alt="">
-                    {{moment.content.contentDetail.danmuCount
-                      ? moment.content.contentDetail.danmuCount : 0}}
+                    {{
+                      moment.content.contentDetail.danmuCount
+                          ? moment.content.contentDetail.danmuCount : 0
+                    }}
                   </div>
                 </div>
 
@@ -243,13 +247,13 @@ export default {
 
 <style scoped lang="less">
 
-.user-moments-container{
+.user-moments-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #4e4e7a;
 
-  .user-moments-post{
+  .user-moments-post {
     width: 50%;
     margin-top: 10px;
     padding: 10px;
@@ -257,32 +261,32 @@ export default {
     border-radius: 5px;
     margin-bottom: 10px;
 
-    .user-moments-post-input{
-      min-height:40px;
+    .user-moments-post-input {
+      min-height: 40px;
       width: 100%;
       outline: none;
       border: none;
       font-size: 16px;
     }
 
-    .user-moments-post-img{
-      .uploaded-img{
+    .user-moments-post-img {
+      .uploaded-img {
         height: 180px;
         width: 320px;
       }
     }
 
-    .user-moments-post-tools{
+    .user-moments-post-tools {
       margin-top: 10px;
       display: flex;
       justify-content: space-between;
       align-content: center;
 
-      .user-moments-post-tools-img{
+      .user-moments-post-tools-img {
         display: flex;
         align-items: center;
 
-        .icon{
+        .icon {
           cursor: pointer;
           height: 20px;
           width: 20px;
@@ -292,29 +296,29 @@ export default {
     }
   }
 
-  .user-moments-nav{
+  .user-moments-nav {
     width: 50%;
     background-color: white;
     border-radius: 5px;
 
 
-    .user-moments-nav-menu{
+    .user-moments-nav-menu {
       padding: 10px;
       border-radius: 5px;
       margin-top: 10px;
       margin-bottom: 10px;
 
-      el-menu-item{
+      el-menu-item {
         font-size: 18px;
       }
     }
   }
 
-  .user-moments-list{
+  .user-moments-list {
     width: 50%;
     margin-top: 10px;
 
-    .user-moments-list-item{
+    .user-moments-list-item {
       background-color: white;
       padding: 20px;
       display: flex;
@@ -322,80 +326,88 @@ export default {
       margin-bottom: 10px;
       border-radius: 5px;
 
-      .user-moments-list-item-userInfo{
+      .user-moments-list-item-userInfo {
         display: flex;
         align-items: center;
-        img{
+
+        img {
           max-height: 60px;
           max-width: 60px;
           border-radius: 5px;
         }
-        .user-moments-list-item-userInfo-detail{
+
+        .user-moments-list-item-userInfo-detail {
           margin-left: 20px;
         }
       }
-      .user-moments-list-item-moment{
+
+      .user-moments-list-item-moment {
         display: flex;
         flex-direction: column;
         padding: 40px;
 
-        .user-moments-list-item-moment-txt{
+        .user-moments-list-item-moment-txt {
           font-size: 18px;
           margin-bottom: 10px;
 
         }
 
-        .user-moments-list-item-moment-img{
-          img{
+        .user-moments-list-item-moment-img {
+          img {
             max-height: 180px;
             max-width: 320px;
             border-radius: 5px;
           }
         }
-        .user-moments-list-item-moment-video{
+
+        .user-moments-list-item-moment-video {
           background-color: #f5f5f5;
           border-radius: 5px;
           display: flex;
           padding: 10px;
 
-          img{
+          img {
             max-height: 180px;
             max-width: 320px;
             border-radius: 5px;
           }
-          .user-moments-list-item-moment-video-detail{
+
+          .user-moments-list-item-moment-video-detail {
             margin-left: 10px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
 
-            .user-moments-list-item-moment-video-detail-title{
+            .user-moments-list-item-moment-video-detail-title {
               font-size: 20px;
             }
 
-            .user-moments-list-item-moment-video-detail-description{
+            .user-moments-list-item-moment-video-detail-description {
               color: gray;
             }
 
-            .user-moments-list-item-moment-video-detail-count{
+            .user-moments-list-item-moment-video-detail-count {
               display: flex;
-              margin-top:20px;
+              margin-top: 20px;
 
-              .user-moments-list-item-moment-video-detail-viewCount{
+              .user-moments-list-item-moment-video-detail-viewCount {
                 display: flex;
                 align-items: center;
                 margin-right: 20px;
-                img{
+
+                img {
                   max-height: 20px;
                   max-width: 20px;
                   margin-right: 5px;
                 }
               }
-              .user-moments-list-item-moment-video-detail-danmuCount{
+
+              .user-moments-list-item-moment-video-detail-danmuCount {
                 display: flex;
                 align-items: center;
                 margin-right: 20px;
-                img{
+
+                img {
                   max-height: 20px;
                   max-width: 20px;
                   margin-right: 5px;
