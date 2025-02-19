@@ -1,152 +1,163 @@
 <script>
-// 导入userUtils模块
 import userUtils from "@/utils/userUtils";
-
-// 导入登录对话框组件 LoginDialog
 import LoginDialog from "@/components/LoginDialog.vue";
+import userMomentApi from "@/api/userMomentApi";
+import userHistoryApi from "@/api/userHistoryApi";
 
-// 导出vue组件
 export default {
-  name: "CommonHeader", // 组件名称
-  components: {LoginDialog}, // 注册当前组件使用的子组件
-
-  // 数据定义
-  data() {
+  name: "CommonHeader",
+  components: {LoginDialog},
+  data(){
     return {
-      // 布尔值，控制登录对话框的显示与隐藏
-      dialogVisible: false,
-      // 数组，存储导航栏的条目
-      entries: [
-        {id: 1, name: '首页', path: '/'},
-        {id: 2, name: '番剧', path: '/'},
-        {id: 3, name: '直播', path: '/'},
-        {id: 4, name: '游戏中心', path: '/'}
+      dialogVisible:false,
+      entries:[
+        {
+          id:1,
+          name:'首页',
+          path:'/'
+        },
+        {
+          id:2,
+          name:'番剧',
+          path:'/'
+        },
+        {
+          id:3,
+          name:'直播',
+          path:'/'
+        },
+        {
+          id:4,
+          name:'游戏中心',
+          path:'/'
+        }
       ],
-      // 字符串，绑定搜索框的输入内容
-      searchTxt: ''
-    };
+      searchTxt:'',
+      moments:[],
+      histories:[]
+    }
   },
-
-  // mixins用于混入其他组件的逻辑
-  mixins: [userUtils],
-
-  // 方法定义
-  methods: {
-    // 跳转页面并检查用户是否登录
-    jumpWithLoginUser(path) {
-      // 如果用户未登录
-      if (!this.isUserLoggedIn) {
-        // 显示登录对话框
+  mixins:[userUtils],
+  methods:{
+    jumpWithLoginUser(path){
+      //先判断用户是否登录，如果没有登录，弹出用户登录对话框
+      if(!this.isUserLoggedIn){
         this.dialogVisible = true;
-      } else {
-        // 如果用户已登录
-        // 跳转到指定路径
-        if (this.$route.path !== path) {
-          this.$router.push(path); // 使用 Vue Router 跳转
-        } else {
-          // 当前路径与目标路径相同则刷新页面
-          location.reload(); // 如果当前路径与目标路径相同，刷新页面
+      }else{
+        //打开一个新的页面地址
+        //如果当前页面的路径等于我们要跳转的路径，则只需要刷新页面
+        if(this.$route.path !== path){
+          this.$router.push(path);
+        }else{
+          location.reload();
         }
       }
     },
 
-    // 跳转到指定路径的方法
-    jumpToPath(path) {
-      if (this.$route.path !== path) {
-        this.$router.push(path); // 使用 Vue Router 跳转
-      } else {
-        location.reload(); // 如果当前路径与目标路径相同，刷新页面
+    jumpToPath(path){
+      if(this.$route.path !== path){
+        this.$router.push(path);
+      }else{
+        location.reload();
       }
     },
 
-    // 搜索内容（暂未实现）
-    searchContents() {
-      // 可以在这里实现搜索逻辑
+    searchContents(){
+      if(this.searchTxt === ''){
+        window.alert('请输入搜索内容');
+        return;
+      }
+      //判断是否重复跳转
+      if(decodeURIComponent(this.$route.fullPath)
+          === '/searchContents?searchTxt='+this.searchTxt){
+        location.reload();
+        return;
+      }
+      this.$router.push({
+        path:'/searchContents',
+        query:{
+          searchTxt:this.searchTxt
+        }
+      })
     }
+
   },
 
-  // 组件挂载后执行的逻辑
   async mounted() {
-    // 如果用户已登录
-    // 使用计算属性isUserLoggerIn判断用户是否登录
-    if (this.isUserLoggedIn) {
-      // 如果用户已经登录
-      // 使用从userUtils混入的方法getUserBasicInfo来获取用户基本信息
-      // 将用户信息存储到Vuex状态中
+    if(this.isUserLoggedIn){
       this.$store.state.userInfo = await this.getUserBasicInfo();
-    }
-  },
 
-  // 计算属性
-  computed: {
-    // 计算用户头像
-    avatar() {
-      const userInfo = this.$store.state.userInfo;
-      // 如果用户信息中存在头像且不为空，返回用户头像；否则返回默认头像
-      if (userInfo && userInfo.avatar && userInfo.avatar !== '') {
-        return userInfo.avatar;
-      } else {
-        return require('@/assets/bilibiliavatar.png'); // 默认头像
+      let params = {
+        size:5,
+        no:1
+      }
+      //查询动态
+      let response = await userMomentApi.pageListMoments(params);
+      if(response.data){
+        this.moments = response.data.list;
+      }
+      //查询历史
+      let response1 = await userHistoryApi.pagListUserVideoHistory(params);
+      if(response1.data){
+        this.histories = response1.data.list;
       }
     }
-  }
-};
+
+  },
+
+  computed:{
+
+    // isUserLoggedIn(){
+    //   return localStorage.getItem('token');
+    // }
+    avatar(){
+      const userInfo = this.$store.state.userInfo;
+      if(userInfo && userInfo.avatar && userInfo.avatar !== '' ){
+        return userInfo.avatar;
+      }else{
+        return require('@/assets/bilibiliavatar.png');
+      }
+    }
+
+  },
+}
 </script>
 
 <template>
 
-<!--  通用头部-->
   <div class="bili-header">
 
-    <!-- 导航栏容器 -->
     <div class="header-nav-container">
 
-      <!-- 左侧导航条目 -->
       <div class="left-entry">
-
         <div v-for="entry in entries" :key="entry.id">
-
-          <span @click="jumpToPath(entry.path)">{{ entry.name }}</span>
-
+          <span @click="jumpToPath(entry.path)">{{entry.name}}</span>
         </div>
-
       </div>
 
-      <!-- 中间搜索栏 -->
       <div class="center-search-bar">
-
-<!--        搜索的表单-->
         <form class="nav-search-form">
-
-<!--          搜索栏的内容部分-->
           <div class="nav-search-content">
-
-<!--            输入框部分-->
             <input class="nav-search-input"
                    type="text" autocomplete="off"
                    maxlength="100" placeholder="请输入要搜索的内容"
-                   v-model="searchTxt"> <!-- 绑定搜索框输入内容 -->
-
+                   v-model="searchTxt">
           </div>
-<!--          搜索按钮-->
           <div class="nav-search-btn">
             <el-button icon="el-icon-search"
-                       circle size="mini" @click="searchContents">
-            </el-button>
+                       circle size="mini" @click="searchContents"></el-button>
           </div>
         </form>
+
       </div>
 
-      <!-- 右侧导航条目 -->
       <div class="right-entry">
 
-        <!-- 用户中心 -->
         <div v-if="isUserLoggedIn" class="user-center">
-<!--          下拉菜单组件-->
           <el-dropdown>
             <span class="el-dropdown-link">
               <img style="height: 50px; width: 50px; border-radius: 50%"
-                   :src="avatar" alt=""> <!-- 显示用户头像 -->
+                   :src="avatar" alt="">
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>
@@ -157,20 +168,17 @@ export default {
               </el-dropdown-item>
               <el-dropdown-item style="color: black">
                 <el-button type="text" style="color: black"
-                           @click="logout"> <!-- 退出登录 -->
+                           @click="logout">
                   退出登录
                 </el-button>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
-
-        <!-- 登录按钮 -->
         <div v-else class="user-center">
           <el-button class="login-button" type="text" @click="dialogVisible = true">
             登录
           </el-button>
-          <!-- 登录对话框 -->
           <el-dialog
               title="密码登录"
               :visible.sync="dialogVisible"
@@ -178,65 +186,161 @@ export default {
             <LoginDialog/>
           </el-dialog>
         </div>
-
-        <!-- 动态内容 -->
+        <!--        动态-->
         <div class="right-entry-moments">
-<!--          弹出框组件-->
           <el-popover
               placement="top-start"
-              width="200"
+              width="300"
               trigger="hover">
             <div v-if="isUserLoggedIn">
-              <div>这里是动态内容</div>
-              <el-button type="info">查看更多</el-button>
+<!--                            <div>-->
+<!--                              这里是动态内容-->
+<!--                            </div>-->
+              <!--              <el-button type="info">-->
+              <!--                查看更多-->
+              <!--              </el-button>-->
+
+              <div class="moment-list">
+                <div class="moment-list-item" v-for="moment in moments" :key="moment.id"
+                     style="background-color: #f1f1f1; margin-bottom: 10px; border-radius: 5px; padding: 5px">
+                  <div class="moment-list-item-txt">
+                    {{moment.content.contentDetail.txt}}
+                  </div>
+                  <div class="moment-list-item-img" v-if="moment.type==='1' " >
+                    <img :src="moment.content.contentDetail.img" alt=""
+                         style="height: 60px; width: 100px; border-radius: 5px; margin-right: 5px">
+                  </div>
+                  <div class="moment-list-item-video" v-if="moment.type==='0' " style="display: flex">
+                    <img :src="moment.content.contentDetail.thumbnail" alt=""
+                         style="height: 60px; width: 100px; border-radius: 5px; margin-right: 5px">
+                    <div class="moment-list-item-video-detail" style="display: flex; flex-direction: column; justify-content: space-between">
+                      <div class="moment-list-item-video-detail-title">
+                        {{moment.content.contentDetail.title}}
+                      </div>
+                      <div class="moment-list-item-video-detail-description">
+                        {{moment.content.contentDetail.description}}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <el-button type="info" style="width: 100%" v-if="isUserLoggedIn"
+                         @click="jumpToPath('/userMoments')">
+                查看更多
+              </el-button>
             </div>
+
+            <!--            <div v-else>-->
+            <!--              <div>-->
+            <!--                登录即可查看动态-->
+            <!--              </div>-->
+            <!--              <el-button type="info">-->
+            <!--                立即登录-->
+            <!--              </el-button>-->
+            <!--            </div>-->
+
             <div v-else>
-              <div>登录即可查看动态</div>
-              <el-button type="info">立即登录</el-button>
+              <div style="text-align: center; font-size: 16px; padding: 10px">
+                登录即可查看动态
+              </div>
+              <el-button type="info" style="width: 100%" @click="dialogVisible=true">
+                立即登录
+              </el-button>
             </div>
-            <el-button slot="reference" class="el-btn-moments">hover 激活</el-button>
+
+            <!--            <el-button slot="reference" class="el-btn-moments">hover 激活</el-button>-->
+            <el-button slot="reference"
+                       icon="el-icon-star-off"
+                       class="el-btn-moments"
+                       type="warning"
+                       circle>
+            </el-button>
           </el-popover>
+          <span style="color: white; margin-top: 5px">动态</span>
         </div>
-
-        <!-- 历史记录 -->
+        <!--        历史-->
         <div class="right-entry-content">
-          <el-button type="warning" icon="el-icon-time" circle></el-button>
-          <span>历史</span>
+          <el-popover
+              placement="top-start"
+              width="300"
+              trigger="hover">
+            <div class="history-list">
+              <div class="history-list-item" v-for="(history,index) in histories"
+                   :key="index"
+                   style="background-color: #f1f1f1; margin-bottom: 10px; border-radius: 5px; padding: 5px">
+                <div class="history-list-item-video" style="display: flex">
+                  <img :src="history.thumbnail" alt=""
+                       style="height: 60px; width: 100px; border-radius: 5px; margin-right: 5px">
+                  <div class="history-list-item-video-detail"
+                       style="display: flex; flex-direction: column; justify-content: space-between">
+                    <div class="history-list-item-video-detail-title">
+                      {{history.title}}
+                    </div>
+                    <div class="history-list-item-video-detail-description">
+                      {{history.description}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <el-button type="info" style="width: 100%" v-if="isUserLoggedIn"
+                       @click="jumpToPath('/userHistory')">
+              查看更多
+            </el-button>
+            <div v-else>
+              <div style="text-align: center; font-size: 16px; padding: 10px">
+                登录即可查看历史
+              </div>
+              <el-button type="info" style="width: 100%" @click="dialogVisible=true">
+                立即登录
+              </el-button>
+            </div>
+            <el-button class="right-entry-button" type="warning"
+                       slot="reference"
+                       icon="el-icon-star-off"
+                       @click="jumpWithLoginUser('/userHistory')"
+                       circle>
+            </el-button>
+          </el-popover>
+          <span style="color: white; margin-top: 5px">历史</span>
         </div>
-
-        <!-- 投稿 -->
         <div class="right-entry-content">
           <el-button type="warning" icon="el-icon-upload2" circle
                      @click="jumpWithLoginUser('postContent')"></el-button>
-          <span>投稿</span>
+          <span style="color: white; margin-top: 5px">投稿</span>
         </div>
       </div>
+
     </div>
 
-    <!-- 头部横幅 -->
     <div class="header-banner-container">
       <img class="banner"
            :src="require('@/assets/header/header-banner.png')" alt="">
     </div>
+
   </div>
+
 </template>
 
 <style scoped lang="less">
-.bili-header {
-  .header-nav-container {
+
+.bili-header{
+
+  .header-nav-container{
+
     position: absolute;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    .left-entry {
+    .left-entry{
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-left: 40px;
-
-      span {
+      span{
         margin-right: 20px;
         color: white;
         font-weight: bolder;
@@ -244,12 +348,11 @@ export default {
       }
     }
 
-    .center-search-bar {
+    .center-search-bar{
       flex: 1 auto;
       min-width: 181px;
       max-width: 500px;
-
-      .nav-search-form {
+      .nav-search-form{
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -258,8 +361,7 @@ export default {
         background-color: white;
         border-radius: 8px;
         opacity: 0.8;
-
-        .nav-search-content {
+        .nav-search-content{
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -267,8 +369,7 @@ export default {
           height: 36px;
           border: 2px solid transparent;
           border-radius: 6px;
-
-          .nav-search-input {
+          .nav-search-input{
             width: 100%;
             font-size: 14px;
             padding-right: 8px;
@@ -279,7 +380,7 @@ export default {
           }
         }
 
-        .nav-search-btn {
+        .nav-search-btn{
           margin: 0;
           padding: 0;
           width: 32px;
@@ -288,19 +389,21 @@ export default {
           border-radius: 6px;
           cursor: pointer;
         }
+
+
       }
+
     }
 
-    .right-entry {
+    .right-entry{
       display: flex;
       flex-direction: row;
       align-items: center;
       padding: 10px;
 
-      .user-center {
+      .user-center{
         margin-right: 10px;
-
-        .login-button {
+        .login-button{
           color: #00a1d6;
           width: 50px;
           height: 50px;
@@ -309,33 +412,34 @@ export default {
           background-color: #fff;
         }
       }
-
-      .right-entry-moments {
-        margin-right: 10px;
-
-        .el-btn-moments {
-          height: 100%;
-        }
-      }
-
-      .right-entry-content {
-        margin-right: 10px;
+      .right-entry-moments{
+        //margin-right: 10px;
+        //
+        //.el-btn-moments{
+        //  height: 100%;
+        //}
+        margin: 0 10px;
         display: flex;
         flex-direction: column;
         align-items: center;
-
-        span {
-          margin-top: 5px;
-          color: white;
-        }
+      }
+      .right-entry-content{
+        margin: 0 10px;
+        //margin-right: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
     }
+
   }
 
-  .header-banner-container {
-    .banner {
+  .header-banner-container{
+    .banner{
       width: 100%;
     }
   }
+
 }
+
 </style>

@@ -14,56 +14,74 @@
         <div class="user-login-form-item-title">
           密码
         </div>
-        <input placeholder="请输入密码" type="text" v-model="password">
+        <input placeholder="请输入密码" type="password" v-model="password">
         <div class="forgetPwd">
           忘记密码？
         </div>
       </div>
       <div class="user-login-form-footer">
-<!--        <button v-on:click="register(account,password)" class="user-login-form-footer-btn">
+        <!--        <button v-on:click="register(account, password)" class="user-login-form-footer-btn">-->
+        <!--          注册-->
+        <!--        </button>-->
+        <!--        <button @click="login" class="user-login-form-footer-btn">-->
+        <!--          登录-->
+        <!--        </button>-->
+        <el-button type="primary" class="user-login-form-footer-btn"
+                   @click="register">
           注册
-        </button>
-        <button @click="login" class="user-login-form-footer-btn">
+        </el-button>
+        <el-button type="primary" class="user-login-form-footer-btn"
+                   @click="login">
           登录
-        </button>-->
-        <el-button type="primary" class="user-login-form-footer-btn">注册</el-button>
-        <el-button type="primary" class="user-login-form-footer-btn">登录</el-button>
+        </el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import userUtils from "@/utils/userUtils";
+import routerUtils from "@/utils/routerUtils";
+
 export default {
   name: 'UserLogin',
+  mixins: [userUtils, routerUtils],
   props: {
     msg: String
   },
-  data(){
+  data() {
     return {
-      account:'',
-      password:''
+      account: '',
+      password: ''
     }
   },
-  methods:{
-    register(account,password){
-      //调用后端接口进行注册功能
-      console.log('account',account);
-      console.log('password',password);
-      this.account++;
+
+  methods: {
+
+    async register() {
+      try {
+        await this.userRegister(this.account, this.password);
+        window.alert('注册成功，请点击登录按钮进行登录');
+      } catch (error) {
+        window.alert('注册失败');
+      }
     },
 
-    login(){
-      if(this.isUserLoggedIn){
-        console.log('用户已经登录');
-      }else{
-        console.log('用户尚未登录');
+    async login() {
+      try {
+        await this.userLogin(this.account, this.password);
+        await this.jumpToPath('/');
+      } catch (e) {
+        window.alert('登录失败');
       }
-    }
+
+    },
+
   },
 
-  computed:{
-    isUserLoggedIn(){
+  computed: {
+
+    isUserLoggedIn() {
       return localStorage.getItem('token');
     }
   },
@@ -92,35 +110,46 @@ export default {
   updated() {
     console.log(this.account);
     console.log('updated');
+  },
+
+  beforeDestroy() {
+    console.log(this.account);
+    console.log('beforeDestroy');
+  },
+
+  destroyed() {
+    console.log('destroyed');
   }
+
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-.user-login-form-container{
+
+.user-login-form-container {
   margin-top: 10%;
   margin-left: 20%;
   margin-right: 20%;
-  background-color: #e3d9d9;
+  background-color: #ececec;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
 
-  .user-login-form{
+  .user-login-form {
     padding: 40px;
     display: flex;
     flex-direction: column;
 
-    .user-login-form-title{
+    .user-login-form-title {
       font-size: 24px;
       text-align: center;
       margin-bottom: 40px;
       font-weight: bold;
     }
 
-    .user-login-form-item{
+    .user-login-form-item {
       display: flex;
       font-size: 20px;
       margin-bottom: 20px;
@@ -130,34 +159,37 @@ export default {
       border-radius: 5px;
       padding: 6px;
 
-      .user-login-form-item-title{
+      .user-login-form-item-title {
         margin-right: 10px;
         margin-bottom: 5px;
       }
 
-      input{
+      input {
         font-size: 18px;
         margin-right: 10px;
         border: none;
         outline: none;
       }
 
-      .forgetPwd{
+      .forgetPwd {
         font-size: 16px;
-        color: #519eea;
+        color: dodgerblue;
         font-weight: bold;
         cursor: pointer;
       }
+
     }
 
-    .user-login-form-footer{
+    .user-login-form-footer {
       display: flex;
       justify-content: space-between;
 
-      .user-login-form-footer-btn{
+      .user-login-form-footer-btn {
         width: 100%;
       }
+
     }
   }
 }
+
 </style>

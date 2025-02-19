@@ -10,6 +10,8 @@ import MySpaceContent from "@/components/mySpace/MySpaceContent.vue";
 import MySpaceInfo from "@/components/mySpace/MySpaceInfo.vue";
 import MySpaceCollection from "@/components/mySpace/MySpaceCollection.vue";
 import MySpaceFollowing from "@/components/mySpace/MySpaceFollowing.vue";
+import UserMoments from "@/components/UserMoments.vue";
+import UserHistory from "@/components/UserHistory.vue";
 
 Vue.use(VueRouter)
 
@@ -66,7 +68,17 @@ const routes = [
         //视频详情
         path:'/videoDetail',
         component:VideoDetail
-    }
+    },
+    {
+        // 用户动态
+        path:'/userMoments',
+        component:UserMoments,
+    },
+    {
+        // 用户历史
+        path:'/userHistory',
+        component:UserHistory,
+    },
 ]
 
 const router = new VueRouter({
