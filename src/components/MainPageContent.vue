@@ -1,17 +1,12 @@
 <script>
-
-// 导入videoApi
 import videoApi from "@/api/videoApi";
+import userUtils from "@/utils/userUtils";
 
 export default {
-  // 组件名称
   name: "MainPageContent",
-
-  // 数据定义
+  mixins:[userUtils],
   data(){
     return{
-
-      // 轮播图数据
       items:[
         {
           imgUrl:require('@/assets/header/header-banner.png'),
@@ -26,8 +21,6 @@ export default {
           id:3,
         }
       ],
-
-      // 菜单数据
       menus:[
         {
           name:'主页',
@@ -40,11 +33,7 @@ export default {
           index:'2'
         }
       ],
-
-      // 推荐
       recommendThumbnail:require('@/assets/bilibiliavatar.png'),
-
-      // 左侧频道列表
       leftChannels: [
         {
           name: '番剧',
@@ -135,8 +124,6 @@ export default {
           href: 'https://www.bilibili.com/anime/'
         }
       ],
-
-      // 右侧频道列表
       rightChannels: [
         {
           name: '专栏',
@@ -163,39 +150,53 @@ export default {
           href: 'https://www.bilibili.com/anime/'
         }
       ],
-
-      // 推荐视频列表
       recommendedVideos:[
-        {
-          id:1,
-          thumbnail:require('@/assets/banner/1.jpg')
-        },
-        {
-          id:2,
-          thumbnail:require('@/assets/banner/2.jpg')
-        },
-        {
-          id:3,
-          thumbnail:require('@/assets/banner/3.jpg')
-        }
+        // {
+        //   id:1,
+        //   thumbnail:require('@/assets/banner/1.jpg')
+        // },
+        // {
+        //   id:2,
+        //   thumbnail:require('@/assets/banner/2.jpg')
+        // },
+        // {
+        //   id:3,
+        //   thumbnail:require('@/assets/banner/3.jpg')
+        // }
       ],
-
-      // 视频列表
-      videos:[],
-
-      // 无限加载的唯一标识
+      videos:[
+        // {
+        //   id:1,
+        //   title:'title1',
+        //   thumbnail:require('@/assets/banner/1.jpg'),
+        //   createTime: '2023-12-16 10:30:42',
+        //   danmuCount:20,
+        //   viewCount:10
+        // },
+        // {
+        //   id:2,
+        //   title:'title2',
+        //   thumbnail:require('@/assets/banner/2.jpg'),
+        //   createTime: '2023-12-17 10:30:42',
+        //   danmuCount:30,
+        //   viewCount:20
+        // },
+        // {
+        //   id:3,
+        //   title:'title3',
+        //   thumbnail:require('@/assets/banner/3.jpg'),
+        //   createTime: '2023-12-18 10:30:42',
+        //   danmuCount:10,
+        //   viewCount:40
+        // }
+      ],
       infiniteId:1,
-
-      // 当前页码
       currentPage:1
     }
+
   },
-
   methods:{
-
-    // 跳转到视频详情页
     jumpToVideoDetail(video){
-      // 暂未实现跳转逻辑
       if(video){
         this.$router.push({
           path:'videoDetail',
@@ -203,41 +204,55 @@ export default {
             videoId:video.id
           }
         });
-      }else {
+      }else{
         this.$router.push('/videoDetail');
       }
     },
 
-    // 分页加载视频列表
     pageListVideos($state){
       let params = {
-        // 每页加载的视频数量
         size:10,
-        // 当前页码
         no:this.currentPage
       }
-      // 调用API分页获取视频列表
       videoApi.pageListVideos({params}).then(response => {
         const {list:videos, total:total} = response.data;
-        // 如果没有更多数据
         if(videos.length === 0){
-          // 已加载所有数据，标记加载完成，不再触发加载
+          // 已加载所有数据，不再触发加载
           $state.complete();
           return;
         }
-        // 将新加载的视频追加到现有视频列表中
         this.videos = this.videos.concat(videos);
         this.total = total;
-        // 递增当前页码
-        this.currentPage++;
-        // 标记加载完成
-        $state.loaded();
+        this.currentPage++; // 递增当前页码
+        $state.loaded(); // 标记加载完成
       }).catch(error => {
         // 捕获异常
         console.error('请求出错:', error);
         $state.complete();
       });
     },
+
+    async getVideoRecommendations() {
+      if (this.isUserLoggedIn) {
+        let params = {
+          // 1、基于用户的协同推荐 2、基于内容的协同推荐
+          recommendType: '2'
+        }
+        let response = await videoApi.getVideoRecommendations(params);
+        if (response.data) {
+          this.recommendedVideos = response.data;
+        }
+      } else {
+        let response = await videoApi.getVideoRecommendationsForVisitor();
+        if (response.data) {
+          this.recommendedVideos = response.data;
+        }
+      }
+    }
+  },
+
+  mounted() {
+    this.getVideoRecommendations();
   }
 }
 </script>
@@ -245,10 +260,8 @@ export default {
 <template>
   <div class="main-page">
 
-<!--    分区导航-->
+    <!--    分区导航-->
     <div class="main-page-channel-container">
-
-<!--      左侧频道-->
       <div class="left-channel">
         <div class="left-channel-recommend">
           <img :src="recommendThumbnail" alt="">
@@ -260,115 +273,117 @@ export default {
         </div>
       </div>
 
-<!--      右侧频道-->
       <div class="right-channel">
         <div class="right-channel-left">
-          <a class="right-channel-left-link"
-             v-for="(channel,index) in leftChannels"
-              :key="index" :href="channel.href" target="_blank">
-            {{channel.name}}
+          <a class="right-channel-left-link" v-for="(channel,index) in leftChannels"
+             :key="index" :href="channel.href" target="_blank">
+            {{ channel.name }}
           </a>
         </div>
         <div class="right-channel-right">
-          <a class="right-channel-right-link"
-             v-for="(channel,index) in rightChannels"
-              :key="index" :href="channel.href" target="_blank">
-            {{channel.name}}
+          <a class="right-channel-right-link" v-for="(channel,index) in rightChannels"
+             :key="index" :href="channel.href" target="_blank">
+            {{ channel.name }}
           </a>
         </div>
       </div>
-
     </div>
 
-<!--    轮播图-->
     <div class="main-page-video-container">
 
       <div class="carousel-container">
-
-<!--        轮播图组件-->
         <el-carousel :interval="5000" arrow="always" class="carousel">
-          <el-carousel-item v-for="(video,index) in recommendedVideos" :key="index">
-            <img :src="video.thumbnail"
+          <el-carousel-item v-for="(video, index) in recommendedVideos" :key="index">
+            <img :src="'http://106.54.188.180:8888/group1/' + video.thumbnail"
                  :alt="video.id" style="width: 100%; height: 100%; border-radius: 5px"
                  @click="jumpToVideoDetail(video)">
           </el-carousel-item>
         </el-carousel>
       </div>
 
-<!--      视频列表-->
       <div class="video-container" v-for="video in videos" :key="video.id"
-                  @click="jumpToVideoDetail(video)">
-        <img :src="'http://106.54.188.180:8888/group1/' + video.thumbnail" class="thumbnail">
-        <span>{{video.title}}</span>
-
+           @click="jumpToVideoDetail(video)">
+        <img :src="'http://106.54.188.180:8888/group1/' + video.thumbnail" class="thumbnail" alt="">
+        <span>{{ video.title }}</span>
         <div class="videos-details">
           <div class="video-count-item">
             <img :src="require('@/assets/icon/viewCount.png')" alt="">
-            {{video.viewCount ? video.viewCount : '-'}}
+            {{ video.viewCount ? video.viewCount : '-' }}
           </div>
           <div class="danmu-count-item">
             <img :src="require('@/assets/icon/danmuCount.png')" alt="">
-            {{video.danmuCount ? video.danmuCount : '-'}}
+            {{ video.danmuCount ? video.danmuCount : '-' }}
           </div>
-
           <div class="videos-time">
-            {{video.createTime}}
+            {{ video.createTime }}
           </div>
         </div>
 
       </div>
-
-<!--      无限加载-->
       <infinite-loading :infinite-id="infiniteId"
                         @infinite="pageListVideos">
-
       </infinite-loading>
 
     </div>
 
+
+    <!--    <el-menu :default-active="'2'" class="el-menu-demo" mode="horizontal">-->
+    <!--      <el-menu-item v-for="menu in menus" :index="menu.index"-->
+    <!--                    :key="menu.index"-->
+    <!--                    @click="$router.push(menu.path)">-->
+    <!--        {{menu.name}}-->
+    <!--      </el-menu-item>-->
+    <!--    </el-menu>-->
+    <!--    <router-view></router-view>-->
   </div>
 </template>
 
 <style scoped lang="less">
-.main-page{
+.main-page {
 
-  .main-page-channel-container{
+  .main-page-channel-container {
     display: flex;
     margin-top: 40px;
     align-items: center;
     justify-content: space-between;
     margin-left: 5%;
     margin-right: 5%;
-    .left-channel{
+
+    .left-channel {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-right: 20px;
-      .left-channel-recommend{
+
+      .left-channel-recommend {
         display: flex;
         align-items: center;
         flex-direction: column;
-        img{
+
+        img {
           height: 40px;
           width: 40px;
           border-radius: 50%;
         }
       }
+
     }
 
-    .right-channel{
+    .right-channel {
       width: 100%;
       display: flex;
       justify-content: space-between;
-      .right-channel-left{
+
+      .right-channel-left {
         display: grid;
         grid-gap: 10px;
-        grid-template-rows: repeat(2,1fr);
+        grid-template-rows: repeat(2, 1fr);
         grid-auto-flow: column;
         border-right: 1px solid gray;
         padding-right: 30px;
         width: 100%;
-        .right-channel-left-link{
+
+        .right-channel-left-link {
           height: 26px;
           text-align: center;
           background-color: #f5f7f8;
@@ -378,22 +393,25 @@ export default {
           cursor: pointer;
           text-decoration: none;
         }
+
+
       }
 
-      .right-channel-right{
+      .right-channel-right {
         width: 240px;
         display: grid;
         grid-auto-flow: column;
-        grid-template-rows: repeat(2,1fr);
+        grid-template-rows: repeat(2, 1fr);
         padding-left: 20px;
 
-        .right-channel-right-link{
+        .right-channel-right-link {
           color: black;
           text-decoration: none;
-
         }
       }
+
     }
+
   }
 
   .main-page-video-container {
@@ -406,18 +424,21 @@ export default {
     margin-left: 5%;
     margin-top: 40px;
 
-    .carousel-container{
+    .carousel-container {
       grid-column: 1/3;
       grid-row: 1/3;
       cursor: pointer;
-      .carousel{
+
+      .carousel {
         height: 100%;
         max-height: 480px;
-        ::v-deep .el-carousel__container{
+
+        ::v-deep .el-carousel__container {
           height: 100%;
           min-height: 400px;
         }
       }
+
     }
 
     .video-container {
@@ -466,20 +487,22 @@ export default {
           }
         }
 
-        .videos-time{
+        .videos-time {
           color: gray;
-          font-size: 13px;
+          font-size: 16px;
         }
       }
     }
 
-    @media (max-width: 1680px){
-      grid-template-columns: repeat(4,1fr);
+    @media (max-width: 1680px) {
+      grid-template-columns: repeat(4, 1fr);
     }
 
-    @media (max-width: 768px){
-      grid-template-columns: repeat(2,1fr);
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
+
 }
+
 </style>
